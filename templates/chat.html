@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Recruiter Re-Ranking Chat Agent</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      margin: 0;
+      background: linear-gradient(180deg, #f2f6ff 0%, #eef2f7 100%);
+      color: #111827;
+    }
+    .wrap {
+      max-width: 1180px;
+      margin: 24px auto;
+      padding: 0 16px;
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      gap: 16px;
+    }
+    .brand-strip {
+      max-width: 1180px;
+      margin: 18px auto 0;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: #ffffff;
+      background: linear-gradient(120deg, #0b4fa9 0%, #255fbe 100%);
+      border: 1px solid #4877ca;
+      border-radius: 14px;
+      box-shadow: 0 8px 16px rgba(10, 52, 109, 0.16);
+    }
+    .brand-logo {
+      width: 46px;
+      height: 46px;
+      flex-shrink: 0;
+    }
+    .brand-name {
+      font-size: 1.35rem;
+      font-weight: 700;
+      line-height: 1.1;
+    }
+    .brand-tagline {
+      font-size: 0.84rem;
+      opacity: 0.92;
+    }
+    .panel {
+      background: #ffffff;
+      border: 1px solid #dbe4f0;
+      border-radius: 14px;
+      box-shadow: 0 10px 22px rgba(15, 23, 42, 0.08);
+    }
+    .left {
+      padding: 16px;
+      height: calc(100vh - 48px);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .left h2 {
+      margin: 0;
+      font-size: 18px;
+    }
+    .hint {
+      margin: 0;
+      font-size: 13px;
+      color: #475569;
+      line-height: 1.5;
+    }
+    label {
+      display: block;
+      font-size: 12px;
+      color: #475569;
+      margin-bottom: 6px;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+    }
+    input, textarea, button {
+      font: inherit;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      background: #fff;
+    }
+    textarea {
+      min-height: 74px;
+      max-height: 140px;
+      resize: vertical;
+    }
+    .tag {
+      display: inline-block;
+      font-size: 11px;
+      color: #1d4ed8;
+      background: #dbeafe;
+      border: 1px solid #bfdbfe;
+      border-radius: 999px;
+      padding: 4px 10px;
+      width: fit-content;
+    }
+    .chat {
+      height: calc(100vh - 48px);
+      display: grid;
+      grid-template-rows: auto 1fr auto auto;
+      overflow: hidden;
+    }
+    .chat-head {
+      padding: 14px 18px;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .chat-head h1 {
+      margin: 0;
+      font-size: 20px;
+    }
+    .chat-head small {
+      display: block;
+      color: #5b6b84;
+      font-size: 12px;
+      margin-top: 3px;
+    }
+    .status {
+      font-size: 12px;
+      color: #0f766e;
+      background: #ccfbf1;
+      border: 1px solid #99f6e4;
+      border-radius: 999px;
+      padding: 4px 10px;
+    }
+    .chat-log {
+      padding: 16px;
+      overflow-y: auto;
+      background: #f8fafc;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .msg {
+      max-width: 80%;
+      border-radius: 12px;
+      padding: 10px 12px;
+      white-space: pre-wrap;
+      line-height: 1.45;
+      font-size: 14px;
+    }
+    .msg.user {
+      align-self: flex-end;
+      background: #1d4ed8;
+      color: #fff;
+      border-bottom-right-radius: 4px;
+    }
+    .msg.assistant {
+      align-self: flex-start;
+      background: #ffffff;
+      border: 1px solid #dbe4f0;
+      color: #0f172a;
+      border-bottom-left-radius: 4px;
+    }
+    .composer {
+      border-top: 1px solid #e2e8f0;
+      padding: 12px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      background: #fff;
+    }
+    button {
+      background: #1258d0;
+      color: #fff;
+      border: 0;
+      border-radius: 10px;
+      padding: 10px 16px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    button:hover { background: #0d47aa; }
+    button:disabled { opacity: 0.6; cursor: not-allowed; }
+    .results {
+      border-top: 1px solid #e2e8f0;
+      background: #fff;
+      padding: 10px 12px;
+      max-height: 36vh;
+      overflow-y: auto;
+    }
+    .results h3 {
+      margin: 4px 0 10px;
+      font-size: 14px;
+      color: #334155;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    th, td {
+      border-bottom: 1px solid #e2e8f0;
+      padding: 8px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: #f8fafc;
+      color: #334155;
+      position: sticky;
+      top: 0;
+    }
+    .empty {
+      font-size: 13px;
+      color: #64748b;
+      padding: 8px 2px;
+    }
+    @media (max-width: 980px) {
+      .wrap { grid-template-columns: 1fr; }
+      .left, .chat { height: auto; }
+      .chat { min-height: 78vh; }
+    }
+
+    @media (max-width: 640px) {
+      .brand-name {
+        font-size: 1.12rem;
+      }
+
+      .brand-tagline {
+        font-size: 0.76rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="brand-strip">
+    <svg class="brand-logo" viewBox="0 0 64 64" aria-hidden="true">
+      <circle cx="32" cy="32" r="29" fill="none" stroke="#ffffff" stroke-width="4"/>
+      <circle cx="18" cy="16" r="4" fill="#ffffff"/>
+      <circle cx="47" cy="16" r="4" fill="#ffffff"/>
+      <circle cx="12" cy="31" r="4" fill="#ffffff"/>
+      <circle cx="52" cy="31" r="4" fill="#ffffff"/>
+      <circle cx="18" cy="48" r="4" fill="#ffffff"/>
+      <circle cx="47" cy="48" r="4" fill="#ffffff"/>
+      <path d="M23 24c4-6 12-6 16 0 2 3 1 8-3 10l-2 1v8h-4v-6l-3 1c-5 2-9-2-9-7 0-3 2-6 5-7z" fill="#ffffff"/>
+    </svg>
+    <div>
+      <div class="brand-name">Globe Telecom</div>
+      <div class="brand-tagline">JD Generation Assistant · Powered by Gemini</div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <aside class="panel left">
+      <h2>Session Setup</h2>
+      <p class="hint">This is a chat-based recruiter agent. Set JD once, then continuously ask for re-ranking changes in natural language.</p>
+      <div>
+        <label for="jdId">JD ID (Optional)</label>
+        <input id="jdId" placeholder="Optional override, e.g. f8fd3644" />
+      </div>
+      <span class="tag">Continuous chat context enabled</span>
+      <p class="hint">Example prompts:</p>
+      <p class="hint">1) We are hiring a lead; prioritize people management and stakeholder communication.
+    2) For cloud infrastructure role, emphasize Kubernetes and Terraform.
+    3) Keep top 3, but explain tradeoffs against strong technical profiles.</p>
+    </aside>
+
+    <section class="panel chat">
+      <div class="chat-head">
+        <div>
+          <h1>Recruiter Re-Ranking Chat Agent</h1>
+          <small>Globe Telecom hiring workflow assistant</small>
+        </div>
+        <span class="status" id="statusPill">Ready</span>
+      </div>
+
+      <div id="chatLog" class="chat-log">
+        <div class="msg assistant">Tell me your hiring preference, and I will re-score and re-rank candidates for the JD.</div>
+      </div>
+
+      <div class="composer">
+        <textarea id="msg" placeholder="Type manager preference... (Enter to send, Shift+Enter for new line)"></textarea>
+        <button id="sendBtn">Send</button>
+      </div>
+
+      <div class="results">
+        <h3>Latest Ranking Result</h3>
+        <div id="emptyState" class="empty">No ranking yet.</div>
+        <table id="resultTable" style="display:none;">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Candidate</th>
+            <th>Score</th>
+            <th>Reason</th>
+            <th>Tradeoff</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const history = [];
+    const jdIdInput = document.getElementById('jdId');
+    const msgInput = document.getElementById('msg');
+    const sendBtn = document.getElementById('sendBtn');
+    const statusPill = document.getElementById('statusPill');
+    const chatLog = document.getElementById('chatLog');
+    const emptyState = document.getElementById('emptyState');
+    const table = document.getElementById('resultTable');
+    const tbody = table.querySelector('tbody');
+
+    function addMessage(role, text) {
+      const node = document.createElement('div');
+      node.className = 'msg ' + role;
+      node.textContent = text;
+      chatLog.appendChild(node);
+      chatLog.scrollTop = chatLog.scrollHeight;
+    }
+
+    async function sendMessage() {
+      const message = msgInput.value.trim();
+      if (!message) {
+        addMessage('assistant', 'Please enter your manager preference message.');
+        return;
+      }
+
+      const jdId = jdIdInput.value.trim();
+
+      addMessage('user', message);
+      msgInput.value = '';
+      sendBtn.disabled = true;
+      statusPill.textContent = 'Thinking...';
+
+      tbody.innerHTML = '';
+      table.style.display = 'none';
+      emptyState.style.display = '';
+
+      try {
+        const res = await fetch('/chat-rerank', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ jd_id: jdId || null, message, history })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          addMessage('assistant', data.detail || 'Request failed.');
+          return;
+        }
+
+        history.push({ role: 'user', content: message });
+        history.push({ role: 'assistant', content: data.reply });
+
+        addMessage('assistant', data.reply);
+
+        (data.ranked_candidates || []).forEach((c, idx) => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${idx + 1}</td>
+            <td>${c.candidate_name || ''}<br><small>${c.application_id || ''}</small></td>
+            <td><strong>${c.revised_score ?? 0}</strong></td>
+            <td>${c.reason || ''}</td>
+            <td>${c.key_tradeoff || ''}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+        if ((data.ranked_candidates || []).length > 0) {
+          emptyState.style.display = 'none';
+          table.style.display = '';
+        }
+      } catch (err) {
+        addMessage('assistant', 'Error: ' + err);
+      } finally {
+        statusPill.textContent = 'Ready';
+        sendBtn.disabled = false;
+        msgInput.focus();
+      }
+    }
+
+    sendBtn.addEventListener('click', sendMessage);
+    msgInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+  </script>
+</body>
+</html>
