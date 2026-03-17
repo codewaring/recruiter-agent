@@ -1,0 +1,34 @@
+steps:
+  # Build the container image
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/recruiter-agent:$SHORT_SHA'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/recruiter-agent:latest'
+      - '.'
+
+  # Push the container image to Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'gcr.io/$PROJECT_ID/recruiter-agent:$SHORT_SHA'
+
+  # Deploy to Cloud Run
+  - name: 'gcr.io/cloud-builders/gke-deploy'
+    args:
+      - run
+      - --filename=k8s/
+      - --image=gcr.io/$PROJECT_ID/recruiter-agent:$SHORT_SHA
+      - --location=asia-southeast1
+      - --cluster=default
+
+images:
+  - 'gcr.io/$PROJECT_ID/recruiter-agent:$SHORT_SHA'
+  - 'gcr.io/$PROJECT_ID/recruiter-agent:latest'
+
+options:
+  machineType: 'N1_HIGHCPU_8'
+
+timeout: '3600s'
