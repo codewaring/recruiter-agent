@@ -9,6 +9,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY src ./src
 COPY templates ./templates
+COPY static ./static
 
 ENV PORT=8090
 CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8090"]
