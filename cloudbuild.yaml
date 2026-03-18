@@ -1,7 +1,7 @@
 substitutions:
   _SERVICE_NAME: recruiter-agent
   _REGION: asia-southeast1
-  _SOURCE_API_BASE_URL: https://jd-agent-gcp-REPLACE_ME.a.run.app
+  _SOURCE_API_BASE_URL: https://jd-agent-gcp-4hhkyhyofa-as.a.run.app
 
 steps:
   - name: gcr.io/cloud-builders/docker
