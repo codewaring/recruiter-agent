@@ -1,6 +1,7 @@
 substitutions:
   _SERVICE_NAME: recruiter-agent
   _REGION: asia-southeast1
+  _MODEL_REGION: us-central1
   _SOURCE_API_BASE_URL: https://jd-agent-gcp-4hhkyhyofa-as.a.run.app
 
 steps:
@@ -28,7 +29,7 @@ steps:
       - --platform=managed
       - --allow-unauthenticated
       - --port=8090
-      - --set-env-vars=GOOGLE_CLOUD_PROJECT=$PROJECT_ID,GOOGLE_CLOUD_LOCATION=${_REGION},GOOGLE_GENAI_USE_VERTEXAI=true,MODEL_NAME=gemini-2.5-pro,SOURCE_API_BASE_URL=${_SOURCE_API_BASE_URL}
+      - --set-env-vars=GOOGLE_CLOUD_PROJECT=$PROJECT_ID,GOOGLE_CLOUD_LOCATION=${_MODEL_REGION},GOOGLE_GENAI_USE_VERTEXAI=true,MODEL_NAME=gemini-2.5-pro,SOURCE_API_BASE_URL=${_SOURCE_API_BASE_URL}
 
 images:
   - gcr.io/$PROJECT_ID/${_SERVICE_NAME}:$SHORT_SHA
